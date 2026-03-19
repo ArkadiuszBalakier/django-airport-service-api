@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -37,8 +39,8 @@ class AirplaneType(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(max_length=255)
-    rows = models.IntegerField()
-    seats_in_row = models.IntegerField()
+    rows = models.IntegerField(validators=[MinValueValidator(1)])
+    seats_in_row = models.IntegerField(validators=[MinValueValidator(1)])
     airplane_type = models.ForeignKey(
         AirplaneType, on_delete=models.CASCADE, related_name="airplane"
     )
@@ -65,6 +67,15 @@ class Flight(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
+    def clean(self):
+        if self.departure_time and self.arrival_time:
+            if self.departure_time >= self.arrival_time:
+                raise ValidationError(
+                    {
+                        "arrival_time": "arrival time need to be after departure (can't be on same time)"
+                    }
+                )
+
     def __str__(self):
         return f"{self.route} {self.airplane} {self.departure_time} {self.arrival_time}"
 
@@ -74,6 +85,20 @@ class Ticket(models.Model):
     seat = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("row", "seat", "flight", "order")
+        ordering = ["flight", "row", "seat"]
+
+    def clean(self):
+        if self.row > self.flight.airplane.row:
+            raise ValidationError(f"Row {self.row} out of range")
+        if self.seat < self.flight.airplane.seat:
+            raise ValidationError(f"Seat {self.seat} out of range")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.row} {self.seat} {self.flight} {self.order}"
