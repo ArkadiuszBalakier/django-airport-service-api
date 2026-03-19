@@ -68,6 +68,7 @@ class Flight(models.Model):
     )
     departure_time = models.DateTimeField(validators=[validate_date_is_future])
     arrival_time = models.DateTimeField(validators=[validate_date_is_future])
+    crew = models.ManyToManyField(Crew, blank=True, related_name="flight")
 
     def clean(self):
         if self.departure_time and self.arrival_time:
