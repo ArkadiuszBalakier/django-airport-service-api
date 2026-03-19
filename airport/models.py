@@ -1,9 +1,10 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-
-from airport.validators import validate_date_is_future
+from django.utils import timezone
 
 
 class Crew(models.Model):
@@ -66,17 +67,25 @@ class Flight(models.Model):
     airplane = models.ForeignKey(
         Airplane, on_delete=models.CASCADE, related_name="flight"
     )
-    departure_time = models.DateTimeField(validators=[validate_date_is_future])
-    arrival_time = models.DateTimeField(validators=[validate_date_is_future])
+    departure_time = models.DateTimeField()
+    arrival_time = models.DateTimeField()
     crew = models.ManyToManyField(Crew, blank=True, related_name="flight")
 
     def clean(self):
+        super().clean()
+
+        now_with_margin = timezone.now() - timedelta(minutes=2)
+
         if self.departure_time and self.arrival_time:
             if self.departure_time >= self.arrival_time:
                 raise ValidationError(
                     {
                         "arrival_time": "arrival time need to be after departure (can't be on same time)"
                     }
+                )
+            if self.departure_time < now_with_margin:
+                raise ValidationError(
+                    {"departure_time": "departure time can't be in pass"}
                 )
 
     def __str__(self):
