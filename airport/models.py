@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from airport.validators import validate_date_is_future
+
 
 class Crew(models.Model):
     first_name = models.CharField(max_length=200)
@@ -64,8 +66,8 @@ class Flight(models.Model):
     airplane = models.ForeignKey(
         Airplane, on_delete=models.CASCADE, related_name="flight"
     )
-    departure_time = models.DateTimeField()
-    arrival_time = models.DateTimeField()
+    departure_time = models.DateTimeField(validators=[validate_date_is_future])
+    arrival_time = models.DateTimeField(validators=[validate_date_is_future])
 
     def clean(self):
         if self.departure_time and self.arrival_time:
