@@ -63,11 +63,26 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
+    departure_time = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%S",
+        input_formats=["%Y-%m-%dT%H:%M:%S", "iso-8601"],
+        style={"input_type": "text"},
+    )
+
+    arrival_time = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%S",
+        input_formats=["%Y-%m-%dT%H:%M:%S", "iso-8601"],
+        style={"input_type": "text"},
+    )
+
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "departure_time", "arrival_time")
 
     def validate(self, attrs):
+        if not attrs:
+            return attrs
+
         if self.instance:
             instance = self.instance
             for field, value in attrs.items():
