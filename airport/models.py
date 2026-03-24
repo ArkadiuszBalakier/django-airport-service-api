@@ -24,9 +24,11 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source")
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="source_routes"
+    )
     destination = models.ForeignKey(
-        Airport, on_delete=models.CASCADE, related_name="destination"
+        Airport, on_delete=models.CASCADE, related_name="destination_routes"
     )
 
     def __str__(self):
@@ -55,7 +57,9 @@ class Airplane(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="order"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="order",
     )
 
     def __str__(self):
@@ -63,7 +67,9 @@ class Order(models.Model):
 
 
 class Flight(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flight")
+    route = models.ForeignKey(
+        Route, on_delete=models.CASCADE, related_name="flight"
+    )
     airplane = models.ForeignKey(
         Airplane, on_delete=models.CASCADE, related_name="flight"
     )
