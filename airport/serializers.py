@@ -68,7 +68,26 @@ class FlightSerializer(serializers.ModelSerializer):
         fields = ("id", "route", "airplane", "departure_time", "arrival_time")
 
     def validate(self, attrs):
-        instance = Flight(**attrs)
+        if self.instance:
+            instance = self.instance
+            for field, value in attrs.items():
+                setattr(instance, field, value)
+        else:
+            instance = Flight(**attrs)
+
+        try:
+            instance.full_clean()
+        except ValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight", "order")
+
+    def validate(self, attrs):
+        instance = Ticket(**attrs)
 
         try:
             instance.full_clean()
@@ -76,9 +95,3 @@ class FlightSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(e.message_dict)
 
         return attrs
-
-
-class TicketSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ticket
-        fields = ("id", "row", "seat", "flight", "order")
