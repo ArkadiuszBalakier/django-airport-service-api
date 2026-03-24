@@ -99,8 +99,8 @@ class Flight(models.Model):
 
 
 class Ticket(models.Model):
-    row = models.IntegerField()
-    seat = models.IntegerField()
+    row = models.IntegerField(validators=[MinValueValidator(1)])
+    seat = models.IntegerField(validators=[MinValueValidator(2)])
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
