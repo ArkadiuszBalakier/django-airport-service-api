@@ -80,6 +80,8 @@ class FlightSerializer(serializers.ModelSerializer):
         except ValidationError as e:
             raise serializers.ValidationError(e.message_dict)
 
+        return attrs
+
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
