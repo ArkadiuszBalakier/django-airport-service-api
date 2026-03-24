@@ -1,6 +1,15 @@
 from rest_framework import serializers
 
-from .models import Crew, Airport, Route, AirplaneType, Airplane, Order, Flight, Ticket
+from .models import (
+    Crew,
+    Airport,
+    Route,
+    AirplaneType,
+    Airplane,
+    Order,
+    Flight,
+    Ticket,
+)
 
 
 class CrewSerializer(serializers.ModelSerializer):
@@ -16,7 +25,9 @@ class AirportSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    source = serializers.SlugRelatedField(many=False, read_only=True, slug_field="name")
+    source = serializers.SlugRelatedField(
+        many=False, read_only=True, slug_field="name"
+    )
     destination = serializers.SlugRelatedField(
         many=False, read_only=True, slug_field="name"
     )
