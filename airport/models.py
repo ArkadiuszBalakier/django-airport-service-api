@@ -68,14 +68,14 @@ class Order(models.Model):
 
 class Flight(models.Model):
     route = models.ForeignKey(
-        Route, on_delete=models.CASCADE, related_name="flight"
+        Route, on_delete=models.CASCADE, related_name="flights"
     )
     airplane = models.ForeignKey(
-        Airplane, on_delete=models.CASCADE, related_name="flight"
+        Airplane, on_delete=models.CASCADE, related_name="flights"
     )
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
-    crew = models.ManyToManyField(Crew, blank=True, related_name="flight")
+    crew = models.ManyToManyField(Crew, blank=True, related_name="flights")
 
     def clean(self):
         super().clean()
