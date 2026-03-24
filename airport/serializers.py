@@ -32,6 +32,12 @@ class RouteSerializer(serializers.ModelSerializer):
         many=False, read_only=True, slug_field="name"
     )
 
+    def validate(self, attrs):
+        if attrs["source"] == attrs["destination"]:
+            raise serializers.ValidationError(
+                {"destination": "destination can be same as source"}
+            )
+
     class Meta:
         model = Route
         fields = ("id", "source", "destination")
