@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "airport",
 ]
 
@@ -69,6 +70,21 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Airport API Project",
+    "DESCRIPTION": "System for airplane tickets reservations",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
 WSGI_APPLICATION = "config.wsgi.application"
 
 
@@ -92,19 +108,13 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
+AUTH_VAL_PATH = "django.contrib.auth.password_validation"
+
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": f"{AUTH_VAL_PATH}.UserAttributeSimilarityValidator"},
+    {"NAME": f"{AUTH_VAL_PATH}.MinimumLengthValidator"},
+    {"NAME": f"{AUTH_VAL_PATH}.CommonPasswordValidator"},
+    {"NAME": f"{AUTH_VAL_PATH}.NumericPasswordValidator"},
 ]
 
 

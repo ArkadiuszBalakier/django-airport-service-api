@@ -1,11 +1,11 @@
-### PyCharm / JetBrains ###
+
 .idea/
 *.iws
 *.iml
 *.ipr
 out/
 
-### Python ###
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -31,7 +31,7 @@ wheels/
 .installed.cfg
 *.egg
 
-### Django ###
+
 *.log
 local_settings.py
 db.sqlite3
@@ -41,19 +41,21 @@ staticfiles/
 .static_root/
 .media_root/
 
-### Docker ###
+
 .dockerignore
-# Ignorujemy tylko dane wolumenów, jeśli trzymasz je w folderze projektu
+
 postgres_data/
 mysql_data/
 
-### Zmienne środowiskowe (KRYTYCZNE) ###
+
 .env
 .env.local
 .env.dev
 .env.prod
 
-### Systemowe ###
+
 .DS_Store
 Thumbs.db
 .ipynb_checkpoints/
+
+initial_data.json
