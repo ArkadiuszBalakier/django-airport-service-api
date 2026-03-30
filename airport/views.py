@@ -16,7 +16,9 @@ from airport.serializers import (
     AirplaneTypeSerializer,
     OrderSerializer,
     FlightSerializer,
+    TicketDetailsSerializer,
     TicketListSerializer,
+    TicketSerializer,
 )
 
 
@@ -57,6 +59,13 @@ class FlightViewSet(viewsets.ModelViewSet):
 
 class TicketViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TicketListSerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return TicketListSerializer
+        if self.action == "retrieve":
+            return TicketDetailsSerializer
+        return TicketSerializer
 
     def get_queryset(self):
         return Ticket.objects.filter(

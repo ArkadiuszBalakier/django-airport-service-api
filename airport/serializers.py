@@ -52,6 +52,8 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
+    airplane_type = AirplaneTypeSerializer()
+
     class Meta:
         model = Airplane
         fields = ("id", "name", "rows", "seats_in_row", "airplane_type")
@@ -65,7 +67,7 @@ class AirplaneNestedSerializer(serializers.ModelSerializer):
 
 class FlightNestedSerializer(serializers.ModelSerializer):
     route = serializers.StringRelatedField()
-    airplane = AirplaneNestedSerializer()
+    airplane = AirplaneNestedSerializer(read_only=True)
 
     class Meta:
         model = Flight
@@ -89,7 +91,14 @@ class FlightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time")
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+            "crew",
+        )
 
     def validate(self, attrs):
         if not attrs:
@@ -127,17 +136,38 @@ class TicketSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class FlightOrderStubSerializer(serializers.ModelSerializer):
+    route = serializers.StringRelatedField()
+
+    class Meta:
+        model = Flight
+        fields = ("route", "departure_time")
+
+
+class TicketOrderSerializer(TicketSerializer):
+    flight = FlightOrderStubSerializer()
+
+    class Meta:
+        model = Ticket
+        fields = ("row", "seat", "flight")
+
+
 class OrderSerializer(serializers.ModelSerializer):
-    tickets = TicketSerializer(many=True)
+    tickets = TicketOrderSerializer(many=True, read_only=True)
+    tickets_to_create = TicketSerializer(
+        many=True, write_only=True, source="tickets"
+    )
 
     class Meta:
         model = Order
-        fields = ("id", "created_at", "user")
+        fields = ("id", "created_at", "user", "tickets", "tickets_to_create")
+        read_only_fields = ("id", "created_at", "user")
 
     def create(self, validated_data):
+        user = self.context["request"].user
         with transaction.atomic():
             tickets_data = validated_data.pop("tickets")
-            order = Order.objects.create(**validated_data)
+            order = Order.objects.create(user=user, **validated_data)
             for ticket_data in tickets_data:
                 Ticket.objects.create(order=order, **ticket_data)
             return order
@@ -145,6 +175,13 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class TicketListSerializer(TicketSerializer):
     flight = FlightNestedSerializer(read_only=True)
+
+    class Meta(TicketSerializer.Meta):
+        fields = ("id", "row", "seat", "flight", "order")
+
+
+class TicketDetailsSerializer(TicketSerializer):
+    flight = FlightSerializer(read_only=True)
 
     class Meta(TicketSerializer.Meta):
         fields = ("id", "row", "seat", "flight", "order")
