@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+from django.db import transaction
 
 from .models import (
     Crew,
@@ -7,9 +8,9 @@ from .models import (
     Route,
     AirplaneType,
     Airplane,
-    Order,
     Flight,
     Ticket,
+    Order,
 )
 
 
@@ -53,14 +54,22 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airport_type")
+        fields = ("id", "name", "rows", "seats_in_row", "airplane_type")
 
 
-class OrderSerializer(serializers.ModelSerializer):
+class AirplaneNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airplane
+        fields = ("name",)
+
+
+class FlightNestedSerializer(serializers.ModelSerializer):
+    route = serializers.StringRelatedField()
+    airplane = AirplaneNestedSerializer()
 
     class Meta:
-        model = Order
-        fields = ("id", "created_at", "user")
+        model = Flight
+        fields = ("route", "airplane", "departure_time", "arrival_time")
 
 
 class FlightSerializer(serializers.ModelSerializer):
@@ -75,6 +84,8 @@ class FlightSerializer(serializers.ModelSerializer):
         input_formats=["%Y-%m-%dT%H:%M:%S", "iso-8601"],
         style={"input_type": "text"},
     )
+    route = serializers.StringRelatedField()
+    airplane = AirplaneSerializer()
 
     class Meta:
         model = Flight
@@ -100,12 +111,10 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
-    flight = FlightSerializer()
-    order = OrderSerializer()
 
     class Meta:
         model = Ticket
-        fields = ("id", "row", "seat", "flight", "order")
+        fields = ("id", "row", "seat", "flight")
 
     def validate(self, attrs):
         instance = Ticket(**attrs)
@@ -116,3 +125,26 @@ class TicketSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(e.message_dict)
 
         return attrs
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ("id", "created_at", "user")
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
+
+
+class TicketListSerializer(TicketSerializer):
+    flight = FlightNestedSerializer(read_only=True)
+
+    class Meta(TicketSerializer.Meta):
+        fields = ("id", "row", "seat", "flight", "order")
