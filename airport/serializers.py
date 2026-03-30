@@ -36,7 +36,7 @@ class RouteSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs["source"] == attrs["destination"]:
             raise serializers.ValidationError(
-                {"destination": "destination can be same as source"}
+                {"destination": "destination can't be same as source"}
             )
 
     class Meta:
@@ -57,6 +57,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Order
         fields = ("id", "created_at", "user")
@@ -99,6 +100,9 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
+    flight = FlightSerializer()
+    order = OrderSerializer()
+
     class Meta:
         model = Ticket
         fields = ("id", "row", "seat", "flight", "order")
