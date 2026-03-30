@@ -36,4 +36,5 @@ if settings.DEBUG:
             SpectacularSwaggerView.as_view(url_name="schema"),
             name="swagger-ui",
         ),
+        path("api/silk/", include("silk.urls", namespace="silk")),
     ]

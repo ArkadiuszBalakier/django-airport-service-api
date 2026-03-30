@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from django.db.models import Prefetch
 
 from airport.models import (
     Crew,
@@ -48,8 +49,20 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        tickets_qs = Ticket.objects.select_related(
+            "flight__route__source",
+            "flight__route__destination",
+            "flight__airplane__airplane_type",
+        )
+
+        return (
+            Order.objects.filter(user=self.request.user)
+            .select_related("user")
+            .prefetch_related(Prefetch("tickets", queryset=tickets_qs))
+        )
 
 
 class FlightViewSet(viewsets.ModelViewSet):
@@ -70,4 +83,8 @@ class TicketViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Ticket.objects.filter(
             order__user=self.request.user
-        ).select_related("flight__airplane", "flight__route")
+        ).select_related(
+            "flight__airplane",
+            "flight__route__source",
+            "flight__route__destination",
+        )
