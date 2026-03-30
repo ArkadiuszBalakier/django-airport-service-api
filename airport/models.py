@@ -85,9 +85,7 @@ class Flight(models.Model):
         if self.departure_time and self.arrival_time:
             if self.departure_time >= self.arrival_time:
                 raise ValidationError(
-                    {
-                        "arrival_time": "arrival time need to be after departure (can't be on same time)"
-                    }
+                    {"arrival_time": "arrival time need to be after departure"}
                 )
             if self.departure_time < now_with_margin:
                 raise ValidationError(
@@ -99,7 +97,8 @@ class Flight(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.route} {self.airplane} {self.departure_time} {self.arrival_time}"
+        return f"""{self.route} {self.airplane}
+    {self.departure_time} {self.arrival_time}"""
 
 
 class Ticket(models.Model):
