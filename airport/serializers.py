@@ -127,11 +127,18 @@ class TicketSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         instance = Ticket(**attrs)
-
         try:
             instance.full_clean()
         except ValidationError as e:
             raise serializers.ValidationError(e.message_dict)
+
+        flight = attrs.get("flight")
+        capacity = flight.airplane.rows * flight.airplane.seats_in_rows
+        current_tickets_count = flight.tickets.count()
+        if current_tickets_count >= capacity:
+            raise serializers.ValidationError(
+                {"flight": "All tickets sold out !!!"}
+            )
 
         return attrs
 
