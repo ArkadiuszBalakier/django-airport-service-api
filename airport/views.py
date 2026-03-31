@@ -13,6 +13,7 @@ from airport.models import (
 from airport.serializers import (
     CrewSerializer,
     AirportSerializer,
+    FlightListSerializer,
     RouteSerializer,
     AirplaneTypeSerializer,
     OrderSerializer,
@@ -68,6 +69,11 @@ class OrderViewSet(viewsets.ModelViewSet):
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrive"):
+            return FlightListSerializer
+        return FlightSerializer
 
     def get_queryset(self):
         return (

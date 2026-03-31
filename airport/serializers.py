@@ -86,8 +86,6 @@ class FlightSerializer(serializers.ModelSerializer):
         input_formats=["%Y-%m-%dT%H:%M:%S", "iso-8601"],
         style={"input_type": "text"},
     )
-    route = serializers.StringRelatedField()
-    airplane = AirplaneSerializer()
 
     class Meta:
         model = Flight
@@ -116,7 +114,38 @@ class FlightSerializer(serializers.ModelSerializer):
         except ValidationError as e:
             raise serializers.ValidationError(e.message_dict)
 
-        return attrs
+        departure = instance.departure_time
+        arrival = instance.arrival_time
+        airplane = instance.airplane
+        crew_members = attrs.get("crew", [])
+
+        overlapping_flights = Flight.objects.filter(
+            departure_time__lt=arrival, arrival_time__gt=departure
+        )
+
+        if self.instance:
+            overlapping_flights = overlapping_flights.exclude(
+                pk=self.instance.pk
+            )
+
+        if overlapping_flights.filter(airplane=airplane).exists():
+            raise serializers.ValidationError(
+                {"airplane": f"{airplane} is assignet to other flight"}
+            )
+
+        if crew_members:
+            busy_crew = overlapping_flights.filter(
+                crew__in=crew_members
+            ).distinct()
+            if busy_crew.exists():
+                raise serializers.ValidationError(
+                    {"crew": "Crew member already assigned to another flight."}
+                )
+
+
+class FlightListSerializer(FlightSerializer):
+    route = serializers.StringRelatedField()
+    airplane = AirplaneSerializer()
 
 
 class TicketSerializer(serializers.ModelSerializer):
