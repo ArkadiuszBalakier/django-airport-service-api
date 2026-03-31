@@ -69,6 +69,17 @@ class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
 
+    def get_queryset(self):
+        return (
+            Flight.objects.all()
+            .select_related(
+                "route__source",
+                "route__destination",
+                "airplane__airplane_type",
+            )
+            .prefetch_related("crew")
+        )
+
 
 class TicketViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TicketListSerializer
