@@ -86,6 +86,7 @@ class FlightSerializer(serializers.ModelSerializer):
         input_formats=["%Y-%m-%dT%H:%M:%S", "iso-8601"],
         style={"input_type": "text"},
     )
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Flight
@@ -96,6 +97,7 @@ class FlightSerializer(serializers.ModelSerializer):
             "departure_time",
             "arrival_time",
             "crew",
+            "tickets_available",
         )
 
     def validate(self, attrs):

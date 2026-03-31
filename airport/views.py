@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from django.db.models import Prefetch
+from django.db.models import Prefetch, F, Count
 
 from airport.models import (
     Crew,
@@ -84,6 +84,12 @@ class FlightViewSet(viewsets.ModelViewSet):
                 "airplane__airplane_type",
             )
             .prefetch_related("crew")
+            .annotate(
+                tickets_available=(
+                    F("airplane__rows") * F("airplane__seats_in_row")
+                    - Count("tickets")
+                )
+            )
         )
 
 
