@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "silk",
     "airport",
+    "user",
 ]
 
 MIDDLEWARE = [
@@ -34,6 +35,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -65,6 +68,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 WSGI_APPLICATION = "config.wsgi.application"
+
+AUTH_USER_MODEL = "user.User"
 
 DATABASES = {
     "default": {
