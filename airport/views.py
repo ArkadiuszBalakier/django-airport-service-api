@@ -63,7 +63,7 @@ class FlightViewSet(viewsets.ModelViewSet):
         return FlightSerializer
 
     def get_queryset(self):
-        return (
+        queryset = (
             Flight.objects.all()
             .select_related(
                 "route__source",

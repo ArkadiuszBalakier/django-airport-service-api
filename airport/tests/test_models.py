@@ -28,7 +28,7 @@ class ModelTests(TestCase):
         source = Airport.objects.create(name="WAW", closest_big_city="Warsaw")
         dest = Airport.objects.create(name="JFK", closest_big_city="New York")
         route = Route.objects.create(source=source, destination=dest)
-        self.assertEqual(str(route), "WAW - JFK")
+        self.assertEqual(str(route), "WAW -> JFK")
 
     def test_airplane_type_str(self):
         airplane_type = AirplaneType.objects.create(name="Boeing 747")
@@ -59,7 +59,9 @@ class ModelTests(TestCase):
             departure_time=departure_time,
             arrival_time="2026-12-31 20:00:00",
         )
-        self.assertEqual(str(flight), f"WAW - JFK ({departure_time})")
+        self.assertEqual(
+            str(flight), f"WAW -> JFK | Test Jet | {departure_time}"
+        )
 
     def test_order_str(self):
         user = get_user_model().objects.create_user(
