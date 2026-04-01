@@ -101,10 +101,14 @@ class Flight(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+<<<<<<< HEAD
         return (
             f"{self.route} {self.airplane} "
             f"{self.departure_time} {self.arrival_time}"
         )
+=======
+        return f"{self.route} | {self.airplane} | {self.departure_time}"
+>>>>>>> 7254425 (fix: correct string representation in Flight model and improve error message in FlightSerializer)
 
 
 class Ticket(models.Model):

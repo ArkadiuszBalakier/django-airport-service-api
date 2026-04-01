@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from django.db.models import F, Count
+from airport.permissions import IsAdminOrReadOnly
 
 from airport.models import (
     Crew,
@@ -17,6 +19,7 @@ from airport.serializers import (
     OrderSerializer,
     FlightSerializer,
     TicketSerializer,
+    FlightListSerializer,
 )
 
 
@@ -51,8 +54,30 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.all()
     serializer_class = FlightSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve"):
+            return FlightListSerializer
+        return FlightSerializer
+
+    def get_queryset(self):
+        return (
+            Flight.objects.all()
+            .select_related(
+                "route__source",
+                "route__destination",
+                "airplane__airplane_type",
+            )
+            .prefetch_related("crew")
+            .annotate(
+                tickets_available=(
+                    F("airplane__rows") * F("airplane__seats_in_row")
+                    - Count("tickets")
+                )
+            )
+        )
 
 
 class TicketViewSet(viewsets.ModelViewSet):
