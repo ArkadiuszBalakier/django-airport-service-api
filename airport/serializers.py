@@ -141,7 +141,7 @@ class FlightSerializer(serializers.ModelSerializer):
 
         if overlapping_flights.filter(airplane=airplane).exists():
             raise serializers.ValidationError(
-                {"airplane": f"{airplane} is assignet to other flight"}
+                {"airplane": f"{airplane} is assigned to another flight"}
             )
 
         if crew_members:

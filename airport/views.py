@@ -104,7 +104,7 @@ class FlightViewSet(viewsets.ModelViewSet):
                     - Count("tickets")
                 )
             )
-        )
+        return queryset
 
 
 class TicketViewSet(viewsets.ReadOnlyModelViewSet):

@@ -97,8 +97,7 @@ class Flight(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"""{self.route} {self.airplane}
-    {self.departure_time} {self.arrival_time}"""
+        return f"{self.route} | {self.airplane} | {self.departure_time}"
 
 
 class Ticket(models.Model):
