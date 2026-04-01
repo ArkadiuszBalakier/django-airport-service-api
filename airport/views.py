@@ -1,5 +1,4 @@
 from rest_framework import viewsets
-from rest_framework import permissions
 from django.db.models import Prefetch, F, Count
 
 from airport.models import (
@@ -52,7 +51,6 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
-    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         tickets_qs = Ticket.objects.select_related(
@@ -97,7 +95,6 @@ class FlightViewSet(viewsets.ModelViewSet):
 
 class TicketViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TicketListSerializer
-    permission_classes = (permissions.IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action == "list":
