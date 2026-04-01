@@ -109,9 +109,14 @@ class Flight(models.Model):
 
 class Ticket(models.Model):
     row = models.IntegerField(validators=[MinValueValidator(1)])
-    seat = models.IntegerField(validators=[MinValueValidator(2)])
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+
+    seat = models.IntegerField(validators=[MinValueValidator(1)])
+    flight = models.ForeignKey(
+        Flight, on_delete=models.CASCADE, related_name="tickets"
+    )
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="tickets"
+    )
 
     class Meta:
         unique_together = ("row", "seat", "flight", "order")
@@ -128,4 +133,4 @@ class Ticket(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.row} {self.seat} {self.flight} {self.order}"
+        return f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
