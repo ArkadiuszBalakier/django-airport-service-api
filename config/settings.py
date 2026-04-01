@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,6 +84,11 @@ DATABASES = {
         "PORT": os.getenv("DATABASE_PORT", ""),
     }
 }
+
+
+if "test" in sys.argv or any("pytest" in arg for arg in sys.argv):
+    DATABASES["default"]["ENGINE"] = "django.db.backends.sqlite3"
+    DATABASES["default"]["NAME"] = BASE_DIR / "test_db.sqlite3"
 
 AUTH_VAL_PATH = "django.contrib.auth.password_validation"
 

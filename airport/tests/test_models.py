@@ -1,7 +1,9 @@
-import datetime
+from datetime import datetime
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+
 from airport.models import (
     Crew,
     Airport,
@@ -43,7 +45,7 @@ class ModelTests(TestCase):
             seats_in_row=6,
             airplane_type=airplane_type,
         )
-        self.assertEqual(str(airplane), "Dreamliner")
+        self.assertEqual(str(airplane), "Dreamliner Boeing")
 
     def test_flight_str(self):
         source = Airport.objects.create(name="WAW", closest_big_city="Warsaw")
@@ -56,12 +58,12 @@ class ModelTests(TestCase):
             seats_in_row=4,
             airplane_type=airplane_type,
         )
-        departure_time = datetime(2026, 12, 31, 12, 0)
+        departure_time = timezone.make_aware(datetime(2026, 12, 31, 12, 0))
         flight = Flight.objects.create(
             route=route,
             airplane=airplane,
             departure_time=departure_time,
-            arrival_time=datetime(2026, 12, 31, 20, 0),
+            arrival_time=timezone.make_aware(datetime(2026, 12, 31, 20, 0)),
         )
         self.assertEqual(
             str(flight), f"WAW -> JFK | Test Jet | {departure_time}"
@@ -72,7 +74,9 @@ class ModelTests(TestCase):
             email="test@test.com", password="password123"
         )
         order = Order.objects.create(user=user)
-        self.assertEqual(str(order.created_at), str(order))
+        self.assertEqual(
+            str(order.user.email) + " " + str(order.created_at), str(order)
+        )
 
     def test_ticket_str(self):
         user = get_user_model().objects.create_user(
@@ -91,8 +95,8 @@ class ModelTests(TestCase):
         flight = Flight.objects.create(
             route=route,
             airplane=airplane,
-            departure_time=datetime(2026, 12, 31, 12, 0),
-            arrival_time=datetime(2026, 12, 31, 20, 0),
+            departure_time=timezone.make_aware(datetime(2026, 12, 31, 12, 0)),
+            arrival_time=timezone.make_aware(datetime(2026, 12, 31, 20, 0)),
         )
         order = Order.objects.create(user=user)
         ticket = Ticket.objects.create(
@@ -117,17 +121,15 @@ class ModelTests(TestCase):
         flight = Flight.objects.create(
             route=route,
             airplane=airplane,
-            departure_time=datetime(2026, 12, 31, 12, 0),
-            arrival_time=datetime(2026, 12, 31, 20, 0),
+            departure_time=timezone.make_aware(datetime(2026, 12, 31, 12, 0)),
+            arrival_time=timezone.make_aware(datetime(2026, 12, 31, 20, 0)),
         )
         order = Order.objects.create(user=user)
 
-        # Testowanie niepoprawnego miejsca (seat=0)
         ticket_invalid = Ticket(row=1, seat=0, flight=flight, order=order)
         with self.assertRaises(ValidationError):
             ticket_invalid.full_clean()
 
-        # Testowanie poprawnego miejsca (seat=1)
         ticket_valid = Ticket(row=1, seat=1, flight=flight, order=order)
         try:
             ticket_valid.full_clean()
