@@ -35,7 +35,6 @@ class RouteSerializer(serializers.ModelSerializer):
     )
 
     def validate(self, attrs):
-        # Obsługa partial update (PATCH)
         source = attrs.get("source") or (
             self.instance.source if self.instance else None
         )
