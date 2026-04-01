@@ -145,7 +145,7 @@ class TicketSerializer(serializers.ModelSerializer):
         instance = Ticket(**attrs)
 
         try:
-            instance.full_clean()
+            instance.full_clean(exclude=["order"])
         except ValidationError as e:
             raise serializers.ValidationError(e.message_dict)
 
