@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -50,14 +52,17 @@ class ModelTests(TestCase):
         route = Route.objects.create(source=source, destination=dest)
         airplane_type = AirplaneType.objects.create(name="Jet")
         airplane = Airplane.objects.create(
-            name="Test", rows=10, seats_in_row=4, airplane_type=airplane_type
+            name="Test",
+            rows=10,
+            seats_in_row=4,
+            airplane_type=airplane_type,
         )
-        departure_time = "2026-12-31 12:00:00"
+        departure_time = datetime(2026, 12, 31, 12, 0)
         flight = Flight.objects.create(
             route=route,
             airplane=airplane,
             departure_time=departure_time,
-            arrival_time="2026-12-31 20:00:00",
+            arrival_time=datetime(2026, 12, 31, 20, 0),
         )
         self.assertEqual(
             str(flight), f"WAW -> JFK | Test Jet | {departure_time}"
@@ -79,13 +84,16 @@ class ModelTests(TestCase):
         route = Route.objects.create(source=source, destination=dest)
         airplane_type = AirplaneType.objects.create(name="Jet")
         airplane = Airplane.objects.create(
-            name="Test", rows=10, seats_in_row=4, airplane_type=airplane_type
+            name="Test",
+            rows=10,
+            seats_in_row=4,
+            airplane_type=airplane_type,
         )
         flight = Flight.objects.create(
             route=route,
             airplane=airplane,
-            departure_time="2026-12-31 12:00:00",
-            arrival_time="2026-12-31 20:00:00",
+            departure_time=datetime(2026, 12, 31, 12, 0),
+            arrival_time=datetime(2026, 12, 31, 20, 0),
         )
         order = Order.objects.create(user=user)
         ticket = Ticket.objects.create(
@@ -102,13 +110,16 @@ class ModelTests(TestCase):
         route = Route.objects.create(source=source, destination=dest)
         airplane_type = AirplaneType.objects.create(name="Jet")
         airplane = Airplane.objects.create(
-            name="Test", rows=10, seats_in_row=4, airplane_type=airplane_type
+            name="Test",
+            rows=10,
+            seats_in_row=4,
+            airplane_type=airplane_type,
         )
         flight = Flight.objects.create(
             route=route,
             airplane=airplane,
-            departure_time="2026-12-31 12:00:00",
-            arrival_time="2026-12-31 20:00:00",
+            departure_time=datetime(2026, 12, 31, 12, 0),
+            arrival_time=datetime(2026, 12, 31, 20, 0),
         )
         order = Order.objects.create(user=user)
 
@@ -123,5 +134,5 @@ class ModelTests(TestCase):
             ticket_valid.full_clean()
         except ValidationError:
             self.fail(
-                "ticket_valid.full_clean() podniosło ValidationError dla seat=1, a nie powinno!"
+                "full_clean() raised ValidationError for seat=1 unexpectedly!"
             )
