@@ -28,17 +28,24 @@ class AirportSerializer(serializers.ModelSerializer):
 
 class RouteSerializer(serializers.ModelSerializer):
     source = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field="name"
+        queryset=Airport.objects.all(), slug_field="name"
     )
     destination = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field="name"
+        queryset=Airport.objects.all(), slug_field="name"
     )
 
     def validate(self, attrs):
-        if attrs["source"] == attrs["destination"]:
+        # Obsługa partial update (PATCH)
+        source = attrs.get("source", getattr(self.instance, "source", None))
+        destination = attrs.get(
+            "destination", getattr(self.instance, "destination", None)
+        )
+
+        if source == destination:
             raise serializers.ValidationError(
                 {"destination": "destination can't be same as source"}
             )
+        return attrs
 
     class Meta:
         model = Route
@@ -164,7 +171,7 @@ class TicketSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(e.message_dict)
 
         flight = attrs.get("flight")
-        capacity = flight.airplane.rows * flight.airplane.seats_in_rows
+        capacity = flight.airplane.rows * flight.airplane.seats_in_row
         current_tickets_count = flight.tickets.count()
         if current_tickets_count >= capacity:
             raise serializers.ValidationError(

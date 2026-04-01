@@ -1,11 +1,14 @@
 from rest_framework import viewsets
+from rest_framework import permissions
 from django.db.models import Prefetch, F, Count
 
+from airport.permissions import IsAdminOrReadOnly
 from airport.models import (
     Crew,
     Airport,
     Route,
     AirplaneType,
+    Airplane,
     Order,
     Flight,
     Ticket,
@@ -16,6 +19,7 @@ from airport.serializers import (
     FlightListSerializer,
     RouteSerializer,
     AirplaneTypeSerializer,
+    AirplaneSerializer,
     OrderSerializer,
     FlightSerializer,
     TicketDetailsSerializer,
@@ -27,30 +31,36 @@ from airport.serializers import (
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all().select_related("source", "destination")
     serializer_class = RouteSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
-    queryset = AirplaneType.objects.all().select_related("airplane_type")
-    serializer_class = AirplaneTypeSerializer
+    queryset = Airplane.objects.all().select_related("airplane_type")
+    serializer_class = AirplaneSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         tickets_qs = Ticket.objects.select_related(
@@ -59,19 +69,23 @@ class OrderViewSet(viewsets.ModelViewSet):
             "flight__airplane__airplane_type",
         )
 
-        return (
-            Order.objects.filter(user=self.request.user)
-            .select_related("user")
-            .prefetch_related(Prefetch("tickets", queryset=tickets_qs))
+        queryset = Order.objects.prefetch_related(
+            Prefetch("tickets", queryset=tickets_qs)
         )
+
+        if not self.request.user.is_staff:
+            return queryset.filter(user=self.request.user)
+
+        return queryset
 
 
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrive"):
+        if self.action in ("list", "retrieve"):
             return FlightListSerializer
         return FlightSerializer
 
@@ -95,6 +109,7 @@ class FlightViewSet(viewsets.ModelViewSet):
 
 class TicketViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TicketListSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -104,10 +119,11 @@ class TicketViewSet(viewsets.ReadOnlyModelViewSet):
         return TicketSerializer
 
     def get_queryset(self):
-        return Ticket.objects.filter(
-            order__user=self.request.user
-        ).select_related(
+        queryset = Ticket.objects.select_related(
             "flight__airplane",
             "flight__route__source",
             "flight__route__destination",
         )
+        if not self.request.user.is_staff:
+            return queryset.filter(order__user=self.request.user)
+        return queryset
