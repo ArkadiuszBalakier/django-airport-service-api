@@ -1,7 +1,6 @@
 from rest_framework import viewsets
 from django.db.models import F, Count
 from airport.permissions import IsAdminOrReadOnly
-
 from airport.models import (
     Crew,
     Airport,
@@ -18,8 +17,8 @@ from airport.serializers import (
     AirplaneTypeSerializer,
     OrderSerializer,
     FlightSerializer,
-    TicketSerializer,
     FlightListSerializer,
+    TicketSerializer,
 )
 
 
@@ -63,7 +62,7 @@ class FlightViewSet(viewsets.ModelViewSet):
         return FlightSerializer
 
     def get_queryset(self):
-        queryset = (
+        return (
             Flight.objects.all()
             .select_related(
                 "route__source",
