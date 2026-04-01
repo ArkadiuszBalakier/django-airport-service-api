@@ -115,14 +115,15 @@ class Ticket(models.Model):
         ordering = ["flight", "row", "seat"]
 
     def clean(self):
-        if self.row > self.flight.airplane.rows:
-            raise ValidationError(f"Row {self.row} out of range")
-        if self.seat > self.flight.airplane.seats_in_row:
-            raise ValidationError(f"Seat {self.seat} out of range")
+        if self.flight and self.flight.airplane:
+            if self.row > self.flight.airplane.rows:
+                raise ValidationError(f"Row {self.row} out of range")
+            if self.seat > self.flight.airplane.seats_in_row:
+                raise ValidationError(f"Seat {self.seat} out of range")
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
+        return f"{self.flight} (row: {self.row}, seat: {self.seat})"
