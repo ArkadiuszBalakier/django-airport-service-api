@@ -21,13 +21,8 @@ services:
       - db
     env_file:
       - .env
-<<<<<<< HEAD
-    command:
-      - python manage.py runserver 0.0.0.0:8000
-=======
     volumes:
       - .:/app
     command: python manage.py runserver 0.0.0.0:8000
->>>>>>> b270af7 (refactor: clean up code and remove unnecessary comments in various files)
 volumes:
   postgres_data:

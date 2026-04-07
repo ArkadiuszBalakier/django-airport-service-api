@@ -62,3 +62,5 @@ initial_data.json
 airport/tests.py
 
 .vscode/
+__pycache__
+*.pyc
