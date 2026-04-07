@@ -60,3 +60,5 @@ Thumbs.db
 
 initial_data.json
 airport/tests.py
+
+.vscode/
